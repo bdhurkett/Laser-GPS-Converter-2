@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
 
 namespace Laser_GPS_Converter_2
 {
@@ -114,8 +115,123 @@ namespace Laser_GPS_Converter_2
 		{
 			if (list_Tracks.SelectedIndices.Count == 0)
 			{
-				return;
+				MessageBox.Show("No tracks are selected.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
 			}
+			else
+			{
+				DialogResult result = saveFileDialog1.ShowDialog();
+
+				if (result == DialogResult.OK)
+				{
+					int[] cNumbers = new int[list_Tracks.SelectedIndices.Count];
+					for (int i = 0; i < list_Tracks.SelectedItems.Count; i++)
+					{
+						cNumbers[i] = Int32.Parse(list_Tracks.SelectedItems[i].ToString().Substring(0, list_Tracks.SelectedItems[i].ToString().IndexOf(':')));
+					}
+					ExportTracks(cNumbers, n_Offset.Value);
+				}
+			}
+		}
+
+		private void ExportTracks(int[] t, decimal offset)
+		{
+			XmlWriterSettings xs = new XmlWriterSettings();
+			xs.Indent = true;
+			xs.NamespaceHandling = NamespaceHandling.OmitDuplicates;
+
+			XmlWriter writer = XmlWriter.Create(saveFileDialog1.FileName, xs);
+			
+			writer.WriteStartDocument();
+			writer.WriteStartElement("gpx", @"http://www.topografix.com/GPX/1/0");
+			writer.WriteAttributeString("creator", "Laser GPS Converter");
+			//writer.WriteAttributeString("xmlns", @"http://www.topografix.com/GPX/1/0");
+			writer.WriteAttributeString("version", "1.0");
+			//writer.WriteAttributeString("xlmns", "xsi", null, @"http://www.w3.org/2001/XMLSchema-instance");
+			writer.WriteAttributeString("xsi", "schemaLocation", @"http://www.w3.org/2001/XMLSchema-instance", @"http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd");
+
+			foreach (int i in t)
+			{
+				DataSet trackPoints = GetTrackPoints(i);
+				DataRowCollection dra = trackPoints.Tables["TrackPoint"].Rows;
+				
+				writer.WriteStartElement("trk");
+				writer.WriteStartElement("trkseg");
+				
+				foreach (DataRow dr in dra)
+				{
+					writer.WriteStartElement("trkpt");
+					if (dr[5].ToString().Trim().Equals("N"))
+						writer.WriteAttributeString("lat", dr[4].ToString());
+					else
+						writer.WriteAttributeString("lat", "-" + dr[4].ToString());
+
+					if (dr[3].ToString().Trim().Equals("E"))
+						writer.WriteAttributeString("lon", dr[2].ToString());
+					else
+						writer.WriteAttributeString("lon", "-" + dr[2].ToString());
+
+					string[] timebits = new string[3];
+					timebits = dr[1].ToString().Trim().Split(':');
+					for (int j = 0; j < 3; j++)
+					{
+						timebits[j] = Int32.Parse(timebits[j]).ToString("D2");
+					}
+
+					string dt = dr[0].ToString().Substring(0, 10) + 'T' + String.Join(":",timebits);
+					dt += offset > 0 ? '+' : '-';
+					dt += ((int)offset).ToString("D2") + ':';
+					dt += (offset - (int)offset == 0 ? "00" : "30");
+					DateTime d = new DateTime(0, DateTimeKind.Local);
+					d = DateTime.Parse(dt);
+
+					writer.WriteElementString("time", d.ToUniversalTime().ToString("s") + 'Z');
+					writer.WriteEndElement();
+				}
+
+				writer.WriteEndElement();
+				writer.WriteEndElement();
+			}
+
+			writer.WriteEndDocument();
+			writer.Close();
+		}
+
+		private DataSet GetTrackPoints(int cNumber)
+		{
+			string strAccessConn = @"Provider=Microsoft.JET.OLEDB.4.0;Data Source=" + openFileDialog1.FileName + "; Jet OLEDB:Database Password=danger";
+			string strAccessSelect = "SELECT TrackPoint1.Track_Date, TrackPoint.TrackTime, TrackPoint.LongitudeN, TrackPoint.LonSign, TrackPoint.LatitudeN, TrackPoint.LatSign FROM TrackPoint, TrackPoint1 WHERE (((TrackPoint.cNumber)=[TrackPoint1].[cNumber]) AND ((TrackPoint1.cNumber)=" + cNumber + ")) ORDER BY TrackPoint.SerNO;";
+
+			DataSet t = new DataSet();
+			OleDbConnection myAccessConn = null;
+			try
+			{
+				myAccessConn = new OleDbConnection(strAccessConn);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Error: Failed to create a database connection. \n{0}", ex.Message);
+			}
+
+			try
+			{
+
+				OleDbCommand myAccessCommand = new OleDbCommand(strAccessSelect, myAccessConn);
+				OleDbDataAdapter myDataAdapter = new OleDbDataAdapter(myAccessCommand);
+
+				myAccessConn.Open();
+				myDataAdapter.Fill(t, "TrackPoint");
+
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Error: Failed to retrieve the required data from the DataBase.\n{0}", ex.Message);
+			}
+			finally
+			{
+				myAccessConn.Close();
+			}
+
+			return t;
 		}
 
 		private void list_Tracks_SelectedIndexChanged(object sender, EventArgs e)
@@ -125,6 +241,7 @@ namespace Laser_GPS_Converter_2
 
 		private void UpdateTrackDetails()
 		{
+			//Should improve this to show different details when multiple tracks selected - count, date range, total duration
 			int i = list_Tracks.Items.Count - (list_Tracks.SelectedIndex + 1);
 
 			txt_Details.Clear();

@@ -139,6 +139,7 @@
 			// saveFileDialog1
 			// 
 			this.saveFileDialog1.DefaultExt = "gpx";
+			this.saveFileDialog1.Filter = "GPX files|*.gpx";
 			this.saveFileDialog1.SupportMultiDottedExtensions = true;
 			this.saveFileDialog1.Title = "Export GPX file...";
 			// 
@@ -154,7 +155,6 @@
 			this.MaximizeBox = false;
 			this.Name = "Form1";
 			this.Text = "Laser GPS Converter V2";
-			this.TopMost = true;
 			this.Load += new System.EventHandler(this.Form_Load);
 			this.groupBox1.ResumeLayout(false);
 			this.groupBox1.PerformLayout();
