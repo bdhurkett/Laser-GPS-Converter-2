@@ -151,12 +151,15 @@ namespace Laser_GPS_Converter_2
 			XmlWriter writer = XmlWriter.Create(saveFileDialog1.FileName, xs);
 			
 			writer.WriteStartDocument();
-			writer.WriteStartElement("gpx", @"http://www.topografix.com/GPX/1/0");
+            writer.WriteStartElement("gpx", @"http://www.topografix.com/GPX/1/1");
 			writer.WriteAttributeString("creator", "Laser GPS Converter");
 			//writer.WriteAttributeString("xmlns", @"http://www.topografix.com/GPX/1/0");
 			writer.WriteAttributeString("version", "1.0");
 			//writer.WriteAttributeString("xlmns", "xsi", null, @"http://www.w3.org/2001/XMLSchema-instance");
-			writer.WriteAttributeString("xsi", "schemaLocation", @"http://www.w3.org/2001/XMLSchema-instance", @"http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd");
+            writer.WriteAttributeString("xsi", "schemaLocation", @"http://www.w3.org/2001/XMLSchema-instance", @"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd");
+            writer.WriteAttributeString("xmlns", "gpxtpx", null, @"http://www.garmin.com/xmlschemas/TrackPointExtension/v1");
+            writer.WriteAttributeString("xmlns", "gpxx", null, @"http://www.garmin.com/xmlschemas/GpxExtensions/v3");
+
 
 			foreach (int i in t)
 			{
@@ -171,15 +174,15 @@ namespace Laser_GPS_Converter_2
 					writer.WriteStartElement("trkpt");
                     //latitude
 					if (dr[5].ToString().Trim().Equals("N"))
-						writer.WriteAttributeString("lat", dr[4].ToString());
+						writer.WriteAttributeString("lat", dr[4].ToString().Replace(',','.'));
 					else
-						writer.WriteAttributeString("lat", "-" + dr[4].ToString());
+                        writer.WriteAttributeString("lat", "-" + dr[4].ToString().Replace(',', '.'));
 
                     //longitude
 					if (dr[3].ToString().Trim().Equals("E"))
-						writer.WriteAttributeString("lon", dr[2].ToString());
+                        writer.WriteAttributeString("lon", dr[2].ToString().Replace(',', '.'));
 					else
-						writer.WriteAttributeString("lon", "-" + dr[2].ToString());
+                        writer.WriteAttributeString("lon", "-" + dr[2].ToString().Replace(',', '.'));
 
                     //time
 					string[] timebits = new string[3];
@@ -197,7 +200,23 @@ namespace Laser_GPS_Converter_2
 
 					writer.WriteElementString("time", d.ToUniversalTime().ToString("s") + 'Z');
 
-					writer.WriteEndElement();
+                    // Elevation
+                    if (Convert.ToDouble(dr[6].ToString()) / 100 > -200.00)
+                    {
+                        writer.WriteElementString("ele", (Convert.ToDouble(dr[6].ToString()) / 100).ToString().Replace(',', '.'));
+                    }
+
+                    // Hearth Rate
+                    double hr = Convert.ToDouble(dr[7].ToString().Trim());
+                    if (hr > 0)
+                    {
+                        writer.WriteStartElement("extensions");
+                        writer.WriteStartElement("gpxtpx", "TrackPointExtension", null);
+                        writer.WriteElementString("gpxtpx", "hr",null, hr.ToString());
+                        writer.WriteEndElement();
+                        writer.WriteEndElement();
+                    }
+                    writer.WriteEndElement();
 				}
 
 				writer.WriteEndElement();
@@ -216,7 +235,7 @@ namespace Laser_GPS_Converter_2
 		{
 			string strAccessConn = @"Provider=Microsoft.JET.OLEDB.4.0;Data Source=" + openFileDialog1.FileName + "; Jet OLEDB:Database Password=danger";
             //Add the appropriate columns here to be able to access them when exporting
-			string strAccessSelect = "SELECT TrackPoint1.Track_Date, TrackPoint.TrackTime, TrackPoint.LongitudeN, TrackPoint.LonSign, TrackPoint.LatitudeN, TrackPoint.LatSign FROM TrackPoint, TrackPoint1 WHERE (((TrackPoint.cNumber)=[TrackPoint1].[cNumber]) AND ((TrackPoint1.cNumber)=" + cNumber + ")) ORDER BY TrackPoint.SerNO;";
+            string strAccessSelect = "SELECT TrackPoint1.Track_Date, TrackPoint.TrackTime, TrackPoint.LongitudeN, TrackPoint.LonSign, TrackPoint.LatitudeN, TrackPoint.LatSign, TrackPoint.Alti, TrackPoint.HeartRate FROM TrackPoint, TrackPoint1 WHERE (((TrackPoint.cNumber)=[TrackPoint1].[cNumber]) AND ((TrackPoint1.cNumber)=" + cNumber + ")) ORDER BY TrackPoint.SerNO;";
 
 			DataSet t = new DataSet();
 			OleDbConnection myAccessConn = null;
@@ -261,6 +280,7 @@ namespace Laser_GPS_Converter_2
 		{
 			//Should improve this to show different details when multiple tracks selected - count, date range, total duration
 			int i = list_Tracks.Items.Count - (list_Tracks.SelectedIndex + 1);
+            Console.WriteLine(i);
 
 			txt_Details.Clear();
 			DataRow dr = tracks.Tables[0].Rows[i];
