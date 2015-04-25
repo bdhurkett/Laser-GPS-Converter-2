@@ -20,9 +20,13 @@ namespace Laser_GPS_Converter_2
 			SetOffsetDefault();
 		}
 
+
 		private void SetOffsetDefault()
 		{
-			TimeZone zone = TimeZone.CurrentTimeZone;
+	        //The times in the DB are stored locally, and GPX needs UTC
+            //Set the 'default' timezone to that used by the computer since
+            //it's probably not far from where the gps tracks were recorded
+            TimeZone zone = TimeZone.CurrentTimeZone;
 			n_Offset.Value = zone.GetUtcOffset(DateTime.Now).Hours;
 		}
 
@@ -51,11 +55,15 @@ namespace Laser_GPS_Converter_2
 			DataRowCollection dra = tracks.Tables["TrackPoint1"].Rows;
 			for (int i = dra.Count - 1; i > -1; i--)
 			{
+                //Pretty print some details for each track to make them more easily identifiable
+                //100000 factor worked out from checking the length of a known gpx record
 				string l = dra[i][2] + ": " + dra[i][3].ToString().TrimEnd(' ') + " (" + Math.Round(Convert.ToDouble(dra[i][13]) / 100000, 2) + " km)";
 				list_Tracks.Items.Add(l);
 			}
 		}
 
+        //Gets the list of tracks - not the points from them, just which are available
+        //Basically copying an MSDN example. I understand it, and it works, but there's probably a much shorter way of writing it.
 		private DataSet GetTracks()
 		{
 			OleDbConnection conn = null;
@@ -91,6 +99,7 @@ namespace Laser_GPS_Converter_2
 			return t;
 		}
 
+        //Tries to set the Open dialog to the default install directory and filename if it exists
 		private void SetUpOpenDialog()
 		{
 			string defaultinstalldir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Laser GPS");
@@ -104,6 +113,9 @@ namespace Laser_GPS_Converter_2
 			}
 		}
 
+        //Finds the track to be exported in a horribly inefficient way.
+        //Rewritten at some point to allow for multiple tracks to be exported at once;
+        //I don't think I ever really tested that though.
 		private void btn_Export_Click(object sender, EventArgs e)
 		{
 			if (list_Tracks.SelectedIndices.Count == 0)
@@ -126,6 +138,9 @@ namespace Laser_GPS_Converter_2
 			}
 		}
 
+        //Outputs the list of coordinates and other necessary data to a GPX file
+        //Uses XMLWriter instead of the first version which was entirely appending strings manually
+        //Probably not very efficient either, but it's still fast enough
 		private void ExportTracks(int[] t, decimal offset)
 		{
 			XmlWriterSettings xs = new XmlWriterSettings();
@@ -189,6 +204,10 @@ namespace Laser_GPS_Converter_2
 			writer.Close();
 		}
 
+        //More 'borrowed' boilerplate code to access databases
+        //Note that the password is apparently 'danger';
+        //I don't think this is a security risk, all things considered.
+        //Password retrieved via http://www.nirsoft.net/utils/accesspv.html
 		private DataSet GetTrackPoints(int cNumber)
 		{
 			string strAccessConn = @"Provider=Microsoft.JET.OLEDB.4.0;Data Source=" + openFileDialog1.FileName + "; Jet OLEDB:Database Password=danger";
@@ -232,6 +251,7 @@ namespace Laser_GPS_Converter_2
 			UpdateTrackDetails();
 		}
 
+        //Shows more specific details about a selected track
 		private void UpdateTrackDetails()
 		{
 			//Should improve this to show different details when multiple tracks selected - count, date range, total duration
@@ -251,6 +271,7 @@ namespace Laser_GPS_Converter_2
 			txt_Details.AppendText(Environment.NewLine + "Distance: " + (Convert.ToDouble(dr[13]) / 100).ToString("n0") + " m");
 		}
 
+        //Converts the DB-stored datetime to a usable one
 		private DateTime ParseDate(DataRow dr, int i)
 		{
 			string s = dr[i].ToString();
