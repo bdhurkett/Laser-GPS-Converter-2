@@ -31,6 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.list_Tracks = new System.Windows.Forms.ListBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.btn_ExportAll = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.n_Offset = new System.Windows.Forms.NumericUpDown();
             this.btn_Export = new System.Windows.Forms.Button();
@@ -38,6 +39,7 @@
             this.btn_Load = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.n_Offset)).BeginInit();
             this.SuspendLayout();
@@ -55,16 +57,27 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.btn_ExportAll);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.n_Offset);
             this.groupBox1.Controls.Add(this.btn_Export);
             this.groupBox1.Controls.Add(this.txt_Details);
             this.groupBox1.Location = new System.Drawing.Point(254, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(330, 275);
+            this.groupBox1.Size = new System.Drawing.Size(397, 275);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Track Details";
+            // 
+            // btn_ExportAll
+            // 
+            this.btn_ExportAll.Location = new System.Drawing.Point(233, 246);
+            this.btn_ExportAll.Name = "btn_ExportAll";
+            this.btn_ExportAll.Size = new System.Drawing.Size(75, 23);
+            this.btn_ExportAll.TabIndex = 4;
+            this.btn_ExportAll.Text = "Export all...";
+            this.btn_ExportAll.UseVisualStyleBackColor = true;
+            this.btn_ExportAll.Click += new System.EventHandler(this.btn_ExportAll_Click);
             // 
             // label1
             // 
@@ -101,7 +114,7 @@
             // 
             // btn_Export
             // 
-            this.btn_Export.Location = new System.Drawing.Point(249, 246);
+            this.btn_Export.Location = new System.Drawing.Point(314, 246);
             this.btn_Export.Name = "btn_Export";
             this.btn_Export.Size = new System.Drawing.Size(75, 23);
             this.btn_Export.TabIndex = 1;
@@ -116,7 +129,7 @@
             this.txt_Details.Multiline = true;
             this.txt_Details.Name = "txt_Details";
             this.txt_Details.ReadOnly = true;
-            this.txt_Details.Size = new System.Drawing.Size(317, 223);
+            this.txt_Details.Size = new System.Drawing.Size(384, 223);
             this.txt_Details.TabIndex = 0;
             // 
             // btn_Load
@@ -149,7 +162,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(596, 299);
+            this.ClientSize = new System.Drawing.Size(663, 299);
             this.Controls.Add(this.btn_Load);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.list_Tracks);
@@ -177,6 +190,8 @@
 		private System.Windows.Forms.Button btn_Load;
 		private System.Windows.Forms.OpenFileDialog openFileDialog1;
 		private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.Button btn_ExportAll;
+        private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
 	}
 }
 

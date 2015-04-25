@@ -125,6 +125,7 @@ namespace Laser_GPS_Converter_2
 			}
 			else
 			{
+                saveFileDialog1.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 				DialogResult result = saveFileDialog1.ShowDialog();
 
 				if (result == DialogResult.OK)
@@ -139,6 +140,23 @@ namespace Laser_GPS_Converter_2
 			}
 		}
 
+        private void btn_ExportAll_Click(object sender, EventArgs e)
+        {
+            if( list_Tracks.Items.Count == 0)
+            {
+                MessageBox.Show("No database selected.", "Export all...", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                int[] cNumbers = new int[list_Tracks.Items.Count];
+                for (int i = 0; i < list_Tracks.Items.Count; i++)
+                {
+                    cNumbers[i] = Int32.Parse(list_Tracks.Items[i].ToString().Substring(0, list_Tracks.Items[i].ToString().IndexOf(':')));
+                }
+                ExportAllTracks(cNumbers, n_Offset.Value);
+            }
+        }
+
         //Outputs the list of coordinates and other necessary data to a GPX file
         //Uses XMLWriter instead of the first version which was entirely appending strings manually
         //Probably not very efficient either, but it's still fast enough
@@ -151,81 +169,126 @@ namespace Laser_GPS_Converter_2
 			XmlWriter writer = XmlWriter.Create(saveFileDialog1.FileName, xs);
 			
 			writer.WriteStartDocument();
-            writer.WriteStartElement("gpx", @"http://www.topografix.com/GPX/1/1");
-			writer.WriteAttributeString("creator", "Laser GPS Converter");
-			//writer.WriteAttributeString("xmlns", @"http://www.topografix.com/GPX/1/0");
-			writer.WriteAttributeString("version", "1.0");
-			//writer.WriteAttributeString("xlmns", "xsi", null, @"http://www.w3.org/2001/XMLSchema-instance");
-            writer.WriteAttributeString("xsi", "schemaLocation", @"http://www.w3.org/2001/XMLSchema-instance", @"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd");
-            writer.WriteAttributeString("xmlns", "gpxtpx", null, @"http://www.garmin.com/xmlschemas/TrackPointExtension/v1");
-            writer.WriteAttributeString("xmlns", "gpxx", null, @"http://www.garmin.com/xmlschemas/GpxExtensions/v3");
-
+            WriteGPXHeader(writer);
 
 			foreach (int i in t)
 			{
 				DataSet trackPoints = GetTrackPoints(i);
 				DataRowCollection dra = trackPoints.Tables["TrackPoint"].Rows;
-				
-				writer.WriteStartElement("trk");
-				writer.WriteStartElement("trkseg");
-				
-				foreach (DataRow dr in dra)
-				{
-					writer.WriteStartElement("trkpt");
-                    //latitude
-					if (dr[5].ToString().Trim().Equals("N"))
-						writer.WriteAttributeString("lat", dr[4].ToString().Replace(',','.'));
-					else
-                        writer.WriteAttributeString("lat", "-" + dr[4].ToString().Replace(',', '.'));
 
-                    //longitude
-					if (dr[3].ToString().Trim().Equals("E"))
-                        writer.WriteAttributeString("lon", dr[2].ToString().Replace(',', '.'));
-					else
-                        writer.WriteAttributeString("lon", "-" + dr[2].ToString().Replace(',', '.'));
-
-                    //time
-					string[] timebits = new string[3];
-					timebits = dr[1].ToString().Trim().Split(':');
-					for (int j = 0; j < 3; j++)
-					{
-						timebits[j] = Int32.Parse(timebits[j]).ToString("D2");
-					}
-					string dt = dr[0].ToString().Substring(0, 10) + 'T' + String.Join(":",timebits);
-					dt += offset > 0 ? '+' : '-';
-					dt += ((int)offset).ToString("D2") + ':';
-					dt += (offset - (int)offset == 0 ? "00" : "30");
-					DateTime d = new DateTime(0, DateTimeKind.Local);
-					d = DateTime.Parse(dt);
-
-					writer.WriteElementString("time", d.ToUniversalTime().ToString("s") + 'Z');
-
-                    // Elevation
-                    if (Convert.ToDouble(dr[6].ToString()) / 100 > -200.00)
-                    {
-                        writer.WriteElementString("ele", (Convert.ToDouble(dr[6].ToString()) / 100).ToString().Replace(',', '.'));
-                    }
-
-                    // Hearth Rate
-                    double hr = Convert.ToDouble(dr[7].ToString().Trim());
-                    if (hr > 0)
-                    {
-                        writer.WriteStartElement("extensions");
-                        writer.WriteStartElement("gpxtpx", "TrackPointExtension", null);
-                        writer.WriteElementString("gpxtpx", "hr",null, hr.ToString());
-                        writer.WriteEndElement();
-                        writer.WriteEndElement();
-                    }
-                    writer.WriteEndElement();
-				}
-
-				writer.WriteEndElement();
-				writer.WriteEndElement();
+                WriteGPX(writer, dra, offset);
 			}
 
 			writer.WriteEndDocument();
 			writer.Close();
 		}
+
+        private void ExportAllTracks(int[] t, decimal offset)
+        {
+            DialogResult result = folderBrowserDialog1.ShowDialog();
+            if (result != DialogResult.OK)
+            {
+                return;
+            }
+
+            DataRowCollection draG = tracks.Tables["TrackPoint1"].Rows;
+            int k = -1;
+            foreach (int i in t)
+            {
+                k++;
+                //Pretty print some details for each track to make them more easily identifiable
+                //100000 factor worked out from checking the length of a known gpx record
+                string fileName = draG[k][3].ToString().TrimEnd(' ').Replace(":", "-");
+
+                XmlWriterSettings xs = new XmlWriterSettings();
+                xs.Indent = true;
+                xs.NamespaceHandling = NamespaceHandling.OmitDuplicates;
+
+                XmlWriter writer = XmlWriter.Create(folderBrowserDialog1.SelectedPath + "\\" + fileName + ".gpx", xs);
+
+                writer.WriteStartDocument();
+                WriteGPXHeader(writer);
+
+                DataSet trackPoints = GetTrackPoints(i);
+                DataRowCollection dra = trackPoints.Tables["TrackPoint"].Rows;
+
+                WriteGPX(writer, dra, offset);
+
+                writer.WriteEndDocument();
+                writer.Close();
+            }
+        }
+
+        private void WriteGPXHeader(XmlWriter writer)
+        {
+            writer.WriteStartElement("gpx", @"http://www.topografix.com/GPX/1/1");
+            writer.WriteAttributeString("creator", "Laser GPS Converter");
+            //writer.WriteAttributeString("xmlns", @"http://www.topografix.com/GPX/1/0");
+            writer.WriteAttributeString("version", "1.0");
+            //writer.WriteAttributeString("xlmns", "xsi", null, @"http://www.w3.org/2001/XMLSchema-instance");
+            writer.WriteAttributeString("xsi", "schemaLocation", @"http://www.w3.org/2001/XMLSchema-instance", @"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd");
+            writer.WriteAttributeString("xmlns", "gpxtpx", null, @"http://www.garmin.com/xmlschemas/TrackPointExtension/v1");
+            writer.WriteAttributeString("xmlns", "gpxx", null, @"http://www.garmin.com/xmlschemas/GpxExtensions/v3");
+        }
+
+        private void WriteGPX(XmlWriter writer, DataRowCollection dra, decimal offset)
+        {
+            writer.WriteStartElement("trk");
+            writer.WriteStartElement("trkseg");
+
+            foreach (DataRow dr in dra)
+            {
+                writer.WriteStartElement("trkpt");
+                //latitude
+                if (dr[5].ToString().Trim().Equals("N"))
+                    writer.WriteAttributeString("lat", dr[4].ToString().Replace(',', '.'));
+                else
+                    writer.WriteAttributeString("lat", "-" + dr[4].ToString().Replace(',', '.'));
+
+                //longitude
+                if (dr[3].ToString().Trim().Equals("E"))
+                    writer.WriteAttributeString("lon", dr[2].ToString().Replace(',', '.'));
+                else
+                    writer.WriteAttributeString("lon", "-" + dr[2].ToString().Replace(',', '.'));
+
+                //time
+                string[] timebits = new string[3];
+                timebits = dr[1].ToString().Trim().Split(':');
+                for (int j = 0; j < 3; j++)
+                {
+                    timebits[j] = Int32.Parse(timebits[j]).ToString("D2");
+                }
+                string dt = dr[0].ToString().Substring(0, 10) + 'T' + String.Join(":", timebits);
+                dt += offset > 0 ? '+' : '-';
+                dt += ((int)offset).ToString("D2") + ':';
+                dt += (offset - (int)offset == 0 ? "00" : "30");
+                DateTime d = new DateTime(0, DateTimeKind.Local);
+                d = DateTime.Parse(dt);
+
+                writer.WriteElementString("time", d.ToUniversalTime().ToString("s") + 'Z');
+
+                // Elevation
+                if (Convert.ToDouble(dr[6].ToString()) / 100 > -200.00)
+                {
+                    writer.WriteElementString("ele", (Convert.ToDouble(dr[6].ToString()) / 100).ToString().Replace(',', '.'));
+                }
+
+                // Hearth Rate
+                double hr = Convert.ToDouble(dr[7].ToString().Trim());
+                if (hr > 0)
+                {
+                    writer.WriteStartElement("extensions");
+                    writer.WriteStartElement("gpxtpx", "TrackPointExtension", null);
+                    writer.WriteElementString("gpxtpx", "hr", null, hr.ToString());
+                    writer.WriteEndElement();
+                    writer.WriteEndElement();
+                }
+                writer.WriteEndElement();
+            }
+
+            writer.WriteEndElement();
+            writer.WriteEndElement();
+        }
 
         //More 'borrowed' boilerplate code to access databases
         //Note that the password is apparently 'danger';
@@ -271,8 +334,9 @@ namespace Laser_GPS_Converter_2
 		}
 
 		private void list_Tracks_SelectedIndexChanged(object sender, EventArgs e)
-		{
-			UpdateTrackDetails();
+        {
+            if (list_Tracks.SelectedItems.Count > 0)
+			    UpdateTrackDetails();
 		}
 
         //Shows more specific details about a selected track
