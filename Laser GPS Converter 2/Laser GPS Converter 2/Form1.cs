@@ -46,9 +46,10 @@ namespace Laser_GPS_Converter_2
 
 			tracks = GetTracks();
 
-			if (tracks.Equals(null))
+			if (tracks == null)
 			{
 				//exception occurred
+                MessageBox.Show("Error loading tracks!");
 				return;
 			}
 
@@ -168,23 +169,25 @@ namespace Laser_GPS_Converter_2
 				foreach (DataRow dr in dra)
 				{
 					writer.WriteStartElement("trkpt");
+                    //latitude
 					if (dr[5].ToString().Trim().Equals("N"))
 						writer.WriteAttributeString("lat", dr[4].ToString());
 					else
 						writer.WriteAttributeString("lat", "-" + dr[4].ToString());
 
+                    //longitude
 					if (dr[3].ToString().Trim().Equals("E"))
 						writer.WriteAttributeString("lon", dr[2].ToString());
 					else
 						writer.WriteAttributeString("lon", "-" + dr[2].ToString());
 
+                    //time
 					string[] timebits = new string[3];
 					timebits = dr[1].ToString().Trim().Split(':');
 					for (int j = 0; j < 3; j++)
 					{
 						timebits[j] = Int32.Parse(timebits[j]).ToString("D2");
 					}
-
 					string dt = dr[0].ToString().Substring(0, 10) + 'T' + String.Join(":",timebits);
 					dt += offset > 0 ? '+' : '-';
 					dt += ((int)offset).ToString("D2") + ':';
@@ -193,6 +196,7 @@ namespace Laser_GPS_Converter_2
 					d = DateTime.Parse(dt);
 
 					writer.WriteElementString("time", d.ToUniversalTime().ToString("s") + 'Z');
+
 					writer.WriteEndElement();
 				}
 
@@ -211,6 +215,7 @@ namespace Laser_GPS_Converter_2
 		private DataSet GetTrackPoints(int cNumber)
 		{
 			string strAccessConn = @"Provider=Microsoft.JET.OLEDB.4.0;Data Source=" + openFileDialog1.FileName + "; Jet OLEDB:Database Password=danger";
+            //Add the appropriate columns here to be able to access them when exporting
 			string strAccessSelect = "SELECT TrackPoint1.Track_Date, TrackPoint.TrackTime, TrackPoint.LongitudeN, TrackPoint.LonSign, TrackPoint.LatitudeN, TrackPoint.LatSign FROM TrackPoint, TrackPoint1 WHERE (((TrackPoint.cNumber)=[TrackPoint1].[cNumber]) AND ((TrackPoint1.cNumber)=" + cNumber + ")) ORDER BY TrackPoint.SerNO;";
 
 			DataSet t = new DataSet();
