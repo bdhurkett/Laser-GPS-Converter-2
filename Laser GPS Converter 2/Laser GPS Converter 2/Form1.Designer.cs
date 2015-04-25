@@ -31,58 +31,50 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.list_Tracks = new System.Windows.Forms.ListBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.btn_ExportAll = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.n_Offset = new System.Windows.Forms.NumericUpDown();
-            this.btn_Export = new System.Windows.Forms.Button();
             this.txt_Details = new System.Windows.Forms.TextBox();
-            this.btn_Load = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.materialFlatButton1 = new MaterialSkin.Controls.MaterialFlatButton();
+            this.materialFlatButton2 = new MaterialSkin.Controls.MaterialFlatButton();
+            this.materialFlatButton3 = new MaterialSkin.Controls.MaterialFlatButton();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.n_Offset)).BeginInit();
             this.SuspendLayout();
             // 
             // list_Tracks
             // 
+            this.list_Tracks.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.list_Tracks.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.list_Tracks.FormattingEnabled = true;
             this.list_Tracks.IntegralHeight = false;
-            this.list_Tracks.Location = new System.Drawing.Point(12, 41);
+            this.list_Tracks.Location = new System.Drawing.Point(12, 83);
             this.list_Tracks.Name = "list_Tracks";
             this.list_Tracks.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
-            this.list_Tracks.Size = new System.Drawing.Size(236, 250);
+            this.list_Tracks.Size = new System.Drawing.Size(236, 242);
             this.list_Tracks.TabIndex = 0;
             this.list_Tracks.SelectedIndexChanged += new System.EventHandler(this.list_Tracks_SelectedIndexChanged);
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.btn_ExportAll);
+            this.groupBox1.Controls.Add(this.materialFlatButton3);
+            this.groupBox1.Controls.Add(this.materialFlatButton2);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.n_Offset);
-            this.groupBox1.Controls.Add(this.btn_Export);
             this.groupBox1.Controls.Add(this.txt_Details);
-            this.groupBox1.Location = new System.Drawing.Point(254, 12);
+            this.groupBox1.Location = new System.Drawing.Point(254, 83);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(397, 275);
+            this.groupBox1.Size = new System.Drawing.Size(390, 285);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Track Details";
             // 
-            // btn_ExportAll
-            // 
-            this.btn_ExportAll.Location = new System.Drawing.Point(233, 246);
-            this.btn_ExportAll.Name = "btn_ExportAll";
-            this.btn_ExportAll.Size = new System.Drawing.Size(75, 23);
-            this.btn_ExportAll.TabIndex = 4;
-            this.btn_ExportAll.Text = "Export all...";
-            this.btn_ExportAll.UseVisualStyleBackColor = true;
-            this.btn_ExportAll.Click += new System.EventHandler(this.btn_ExportAll_Click);
-            // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 251);
+            this.label1.Location = new System.Drawing.Point(20, 258);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(127, 13);
             this.label1.TabIndex = 3;
@@ -96,7 +88,7 @@
             0,
             0,
             65536});
-            this.n_Offset.Location = new System.Drawing.Point(139, 249);
+            this.n_Offset.Location = new System.Drawing.Point(153, 254);
             this.n_Offset.Maximum = new decimal(new int[] {
             12,
             0,
@@ -112,35 +104,16 @@
             this.n_Offset.TabIndex = 2;
             this.n_Offset.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
-            // btn_Export
-            // 
-            this.btn_Export.Location = new System.Drawing.Point(314, 246);
-            this.btn_Export.Name = "btn_Export";
-            this.btn_Export.Size = new System.Drawing.Size(75, 23);
-            this.btn_Export.TabIndex = 1;
-            this.btn_Export.Text = "Export...";
-            this.btn_Export.UseVisualStyleBackColor = true;
-            this.btn_Export.Click += new System.EventHandler(this.btn_Export_Click);
-            // 
             // txt_Details
             // 
-            this.txt_Details.Font = new System.Drawing.Font("Courier New", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt_Details.Location = new System.Drawing.Point(7, 20);
+            this.txt_Details.BackColor = System.Drawing.SystemColors.Window;
+            this.txt_Details.Font = new System.Drawing.Font("Tahoma", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txt_Details.Location = new System.Drawing.Point(9, 19);
             this.txt_Details.Multiline = true;
             this.txt_Details.Name = "txt_Details";
             this.txt_Details.ReadOnly = true;
-            this.txt_Details.Size = new System.Drawing.Size(384, 223);
+            this.txt_Details.Size = new System.Drawing.Size(371, 223);
             this.txt_Details.TabIndex = 0;
-            // 
-            // btn_Load
-            // 
-            this.btn_Load.Location = new System.Drawing.Point(12, 12);
-            this.btn_Load.Name = "btn_Load";
-            this.btn_Load.Size = new System.Drawing.Size(75, 23);
-            this.btn_Load.TabIndex = 2;
-            this.btn_Load.Text = "Load...";
-            this.btn_Load.UseVisualStyleBackColor = true;
-            this.btn_Load.Click += new System.EventHandler(this.btn_Load_Click);
             // 
             // openFileDialog1
             // 
@@ -158,19 +131,69 @@
             this.saveFileDialog1.SupportMultiDottedExtensions = true;
             this.saveFileDialog1.Title = "Export GPX file...";
             // 
+            // materialFlatButton1
+            // 
+            this.materialFlatButton1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.materialFlatButton1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(150)))), ((int)(((byte)(243)))));
+            this.materialFlatButton1.Depth = 0;
+            this.materialFlatButton1.Location = new System.Drawing.Point(13, 334);
+            this.materialFlatButton1.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
+            this.materialFlatButton1.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialFlatButton1.Name = "materialFlatButton1";
+            this.materialFlatButton1.Primary = false;
+            this.materialFlatButton1.Size = new System.Drawing.Size(75, 23);
+            this.materialFlatButton1.TabIndex = 4;
+            this.materialFlatButton1.Text = "Load";
+            this.materialFlatButton1.UseVisualStyleBackColor = false;
+            this.materialFlatButton1.Click += new System.EventHandler(this.btn_Load_Click);
+            // 
+            // materialFlatButton2
+            // 
+            this.materialFlatButton2.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.materialFlatButton2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(150)))), ((int)(((byte)(243)))));
+            this.materialFlatButton2.Depth = 0;
+            this.materialFlatButton2.Location = new System.Drawing.Point(222, 251);
+            this.materialFlatButton2.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
+            this.materialFlatButton2.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialFlatButton2.Name = "materialFlatButton2";
+            this.materialFlatButton2.Primary = false;
+            this.materialFlatButton2.Size = new System.Drawing.Size(75, 23);
+            this.materialFlatButton2.TabIndex = 9;
+            this.materialFlatButton2.Text = "Export all";
+            this.materialFlatButton2.UseVisualStyleBackColor = false;
+            this.materialFlatButton2.Click += new System.EventHandler(this.btn_ExportAll_Click);
+            // 
+            // materialFlatButton3
+            // 
+            this.materialFlatButton3.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.materialFlatButton3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(150)))), ((int)(((byte)(243)))));
+            this.materialFlatButton3.Depth = 0;
+            this.materialFlatButton3.Location = new System.Drawing.Point(305, 251);
+            this.materialFlatButton3.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
+            this.materialFlatButton3.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialFlatButton3.Name = "materialFlatButton3";
+            this.materialFlatButton3.Primary = false;
+            this.materialFlatButton3.Size = new System.Drawing.Size(75, 23);
+            this.materialFlatButton3.TabIndex = 10;
+            this.materialFlatButton3.Text = "Export";
+            this.materialFlatButton3.UseVisualStyleBackColor = false;
+            this.materialFlatButton3.Click += new System.EventHandler(this.btn_Export_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(663, 299);
-            this.Controls.Add(this.btn_Load);
+            this.ClientSize = new System.Drawing.Size(657, 385);
+            this.Controls.Add(this.materialFlatButton1);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.list_Tracks);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(657, 385);
+            this.MinimumSize = new System.Drawing.Size(657, 385);
             this.Name = "Form1";
-            this.Text = "Laser GPS Converter V2";
+            this.Sizable = false;
+            this.Text = "GPS Converter V2";
             this.Load += new System.EventHandler(this.Form_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
@@ -184,14 +207,14 @@
 		private System.Windows.Forms.ListBox list_Tracks;
 		private System.Windows.Forms.GroupBox groupBox1;
 		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.NumericUpDown n_Offset;
-		private System.Windows.Forms.Button btn_Export;
-		private System.Windows.Forms.TextBox txt_Details;
-		private System.Windows.Forms.Button btn_Load;
+        private System.Windows.Forms.NumericUpDown n_Offset;
+        private System.Windows.Forms.TextBox txt_Details;
 		private System.Windows.Forms.OpenFileDialog openFileDialog1;
-		private System.Windows.Forms.SaveFileDialog saveFileDialog1;
-        private System.Windows.Forms.Button btn_ExportAll;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
+        private MaterialSkin.Controls.MaterialFlatButton materialFlatButton1;
+        private MaterialSkin.Controls.MaterialFlatButton materialFlatButton3;
+        private MaterialSkin.Controls.MaterialFlatButton materialFlatButton2;
 	}
 }
 

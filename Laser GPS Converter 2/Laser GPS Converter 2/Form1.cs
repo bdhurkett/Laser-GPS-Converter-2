@@ -1,18 +1,27 @@
-﻿using System;
+﻿using MaterialSkin;
+using MaterialSkin.Controls;
+using System;
 using System.Data;
 using System.Data.OleDb;
+using System.Drawing;
 using System.Windows.Forms;
 using System.Xml;
 
+
 namespace Laser_GPS_Converter_2
 {
-	public partial class Form1 : Form
+
+    public partial class Form1 : MaterialForm
 	{
 		DataSet tracks;
 
 		public Form1()
 		{
 			InitializeComponent();
+            var materialSkinManager = MaterialSkinManager.Instance;
+            materialSkinManager.AddFormToManage(this);
+            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
+            materialSkinManager.ColorScheme = new ColorScheme(Primary.Blue500, Primary.Blue900, Primary.Blue700, Accent.LightBlue200, TextShade.WHITE);
 		}
 
 		private void Form_Load(object sender, EventArgs e)
