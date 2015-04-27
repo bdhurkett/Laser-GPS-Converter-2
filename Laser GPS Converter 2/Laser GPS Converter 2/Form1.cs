@@ -77,7 +77,8 @@ namespace Laser_GPS_Converter_2
             }
 
             DataRowCollection dra = tracks.Tables["TrackPoint1"].Rows;
-            for (int i = dra.Count - 1; i > -1; i--)
+            //for (int i = dra.Count - 1; i > -1; i--)
+            for (int i = 0; i < dra.Count; i++)
             {
                 //Pretty print some details for each track to make them more easily identifiable
                 //100000 factor worked out from checking the length of a known gpx record
@@ -293,7 +294,7 @@ namespace Laser_GPS_Converter_2
                 }
 
                 // Hearth Rate
-                double hr = Convert.ToDouble(dr[7].ToString().Trim());
+                double hr = Convert.ToDouble(dr[7].ToString().Trim()) / 5;
                 if (hr > 0)
                 {
                     writer.WriteStartElement("extensions");
