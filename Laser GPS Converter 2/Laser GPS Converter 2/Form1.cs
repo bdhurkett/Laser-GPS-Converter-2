@@ -363,7 +363,8 @@ namespace Laser_GPS_Converter_2
 		private void UpdateTrackDetails()
 		{
 			//Should improve this to show different details when multiple tracks selected - count, date range, total duration
-			int i = list_Tracks.Items.Count - (list_Tracks.SelectedIndex + 1);
+            int i = list_Tracks.SelectedIndex;
+
             Console.WriteLine(i);
 
 			txt_Details.Clear();
