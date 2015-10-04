@@ -111,7 +111,7 @@
             // 
             // txt_Details
             // 
-            this.txt_Details.Font = new System.Drawing.Font("Courier New", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txt_Details.Font = new System.Drawing.Font("Courier New", 14F);
             this.txt_Details.Location = new System.Drawing.Point(7, 20);
             this.txt_Details.Multiline = true;
             this.txt_Details.Name = "txt_Details";
