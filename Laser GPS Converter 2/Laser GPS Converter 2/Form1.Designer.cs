@@ -106,9 +106,14 @@
             // 
             // txt_Details
             // 
+<<<<<<< HEAD
             this.txt_Details.BackColor = System.Drawing.SystemColors.Window;
             this.txt_Details.Font = new System.Drawing.Font("Tahoma", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txt_Details.Location = new System.Drawing.Point(9, 19);
+=======
+            this.txt_Details.Font = new System.Drawing.Font("Courier New", 14F);
+            this.txt_Details.Location = new System.Drawing.Point(7, 20);
+>>>>>>> master
             this.txt_Details.Multiline = true;
             this.txt_Details.Name = "txt_Details";
             this.txt_Details.ReadOnly = true;
