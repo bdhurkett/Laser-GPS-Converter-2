@@ -1,4 +1,5 @@
-﻿using MaterialSkin;
+﻿using Laser_GPS_Converter_2.Config;
+using MaterialSkin;
 using MaterialSkin.Controls;
 using System;
 using System.Data;
@@ -6,6 +7,8 @@ using System.Data.OleDb;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Xml;
+using System.Yaml;
+using System.Yaml.Serialization;
 
 
 namespace Laser_GPS_Converter_2
@@ -22,7 +25,12 @@ namespace Laser_GPS_Converter_2
             materialSkinManager.AddFormToManage(this);
             materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
             materialSkinManager.ColorScheme = new ColorScheme(Primary.Blue500, Primary.Blue900, Primary.Blue700, Accent.LightBlue200, TextShade.WHITE);
-		}
+            ConfigYaml c = ConfigYaml.Instance;
+            if(System.IO.File.Exists(c.Properties.DbPath))
+            {
+                Load_DB(ConfigYaml.Instance.Properties.DbPath);
+            }
+        }
 
 		private void Form_Load(object sender, EventArgs e)
 		{
@@ -41,11 +49,8 @@ namespace Laser_GPS_Converter_2
 
 		private void btn_Load_Click(object sender, EventArgs e)
 		{
-			
-			SetUpOpenDialog();
-
+            openFileDialog1.InitialDirectory = ConfigYaml.Instance.Properties.DbPath;
 			list_Tracks.Items.Clear();
-
 			DialogResult result = openFileDialog1.ShowDialog();
 
 			if (result.Equals(DialogResult.Cancel))
@@ -53,35 +58,45 @@ namespace Laser_GPS_Converter_2
 				return;
 			}
 
-			tracks = GetTracks();
+            ConfigYaml.Instance.Properties.DbPath = openFileDialog1.FileName;
+            ConfigYaml.Instance.Update();
 
-			if (tracks == null)
-			{
-				//exception occurred
+            Load_DB(ConfigYaml.Instance.Properties.DbPath);
+		}
+
+
+        private void Load_DB(string path)
+        {
+            tracks = GetTracks(path);
+
+            if (tracks == null)
+            {
+                //exception occurred
                 MessageBox.Show("Error loading tracks!");
-				return;
-			}
+                return;
+            }
 
-			DataRowCollection dra = tracks.Tables["TrackPoint1"].Rows;
-			for (int i = dra.Count - 1; i > -1; i--)
-			{
+            DataRowCollection dra = tracks.Tables["TrackPoint1"].Rows;
+            //for (int i = dra.Count - 1; i > -1; i--)
+            for (int i = 0; i < dra.Count; i++)
+            {
                 //Pretty print some details for each track to make them more easily identifiable
                 //100000 factor worked out from checking the length of a known gpx record
                 string l = dra[i][2] + ": " + dra[i][3].ToString().TrimEnd(' ');
-                string dist = dra[i][13].ToString();
-                if (dist.Trim(' ') != "")
+                string dist = dra[i][13].ToString().Trim(' ');
+                if (dist != "")
                     l += " (" + Math.Round(Convert.ToDouble(dist) / 100000, 2) + " km)";
-				list_Tracks.Items.Add(l);
-			}
-		}
+                list_Tracks.Items.Add(l);
+            }
+        }
 
         //Gets the list of tracks - not the points from them, just which are available
         //Basically copying an MSDN example. I understand it, and it works, but there's probably a much shorter way of writing it.
-		private DataSet GetTracks()
+		private DataSet GetTracks(string path)
 		{
 			OleDbConnection conn = null;
 			DataSet t = new DataSet();
-			string strAccessConn = @"Provider=Microsoft.JET.OLEDB.4.0;Data Source=" + openFileDialog1.FileName + "; Jet OLEDB:Database Password=danger";
+            string strAccessConn = @"Provider=Microsoft.JET.OLEDB.4.0;Data Source=" + path + "; Jet OLEDB:Database Password=danger";
 			string strAccessSelect = "SELECT * FROM TrackPoint1";
 			try
 			{
@@ -112,20 +127,6 @@ namespace Laser_GPS_Converter_2
 			return t;
 		}
 
-        //Tries to set the Open dialog to the default install directory and filename if it exists
-		private void SetUpOpenDialog()
-		{
-			string defaultinstalldir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Laser GPS");
-			if (System.IO.Directory.Exists(defaultinstalldir))
-			{
-				openFileDialog1.InitialDirectory = defaultinstalldir;
-			}
-			else
-			{
-				openFileDialog1.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-			}
-		}
-
         //Finds the track to be exported in a horribly inefficient way.
         //Rewritten at some point to allow for multiple tracks to be exported at once;
         //I don't think I ever really tested that though.
@@ -137,11 +138,14 @@ namespace Laser_GPS_Converter_2
 			}
 			else
 			{
-                saveFileDialog1.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                saveFileDialog1.InitialDirectory = ConfigYaml.Instance.Properties.ExportPath;
 				DialogResult result = saveFileDialog1.ShowDialog();
 
 				if (result == DialogResult.OK)
 				{
+                    ConfigYaml.Instance.Properties.ExportPath = System.IO.Path.GetDirectoryName(saveFileDialog1.FileName);
+                    ConfigYaml.Instance.Update();
+
 					int[] cNumbers = new int[list_Tracks.SelectedIndices.Count];
 					for (int i = 0; i < list_Tracks.SelectedItems.Count; i++)
 					{
@@ -197,11 +201,16 @@ namespace Laser_GPS_Converter_2
 
         private void ExportAllTracks(int[] t, decimal offset)
         {
+            folderBrowserDialog1.SelectedPath = ConfigYaml.Instance.Properties.ExportPath;
             DialogResult result = folderBrowserDialog1.ShowDialog();
+
             if (result != DialogResult.OK)
             {
                 return;
             }
+
+            ConfigYaml.Instance.Properties.ExportPath = folderBrowserDialog1.SelectedPath;
+            ConfigYaml.Instance.Update();
 
             DataRowCollection draG = tracks.Tables["TrackPoint1"].Rows;
             int k = -1;
@@ -217,6 +226,8 @@ namespace Laser_GPS_Converter_2
                 xs.NamespaceHandling = NamespaceHandling.OmitDuplicates;
 
                 XmlWriter writer = XmlWriter.Create(folderBrowserDialog1.SelectedPath + "\\" + fileName + ".gpx", xs);
+
+
 
                 writer.WriteStartDocument();
                 WriteGPXHeader(writer);
@@ -286,7 +297,7 @@ namespace Laser_GPS_Converter_2
                 }
 
                 // Hearth Rate
-                double hr = Convert.ToDouble(dr[7].ToString().Trim());
+                double hr = Convert.ToDouble(dr[7].ToString().Trim()) / 5;
                 if (hr > 0)
                 {
                     writer.WriteStartElement("extensions");
@@ -308,7 +319,7 @@ namespace Laser_GPS_Converter_2
         //Password retrieved via http://www.nirsoft.net/utils/accesspv.html
 		private DataSet GetTrackPoints(int cNumber)
 		{
-			string strAccessConn = @"Provider=Microsoft.JET.OLEDB.4.0;Data Source=" + openFileDialog1.FileName + "; Jet OLEDB:Database Password=danger";
+			string strAccessConn = @"Provider=Microsoft.JET.OLEDB.4.0;Data Source=" + ConfigYaml.Instance.Properties.DbPath + "; Jet OLEDB:Database Password=danger";
             //Add the appropriate columns here to be able to access them when exporting
             string strAccessSelect = "SELECT TrackPoint1.Track_Date, TrackPoint.TrackTime, TrackPoint.LongitudeN, TrackPoint.LonSign, TrackPoint.LatitudeN, TrackPoint.LatSign, TrackPoint.Alti, TrackPoint.HeartRate FROM TrackPoint, TrackPoint1 WHERE (((TrackPoint.cNumber)=[TrackPoint1].[cNumber]) AND ((TrackPoint1.cNumber)=" + cNumber + ")) ORDER BY TrackPoint.SerNO;";
 
@@ -355,13 +366,14 @@ namespace Laser_GPS_Converter_2
 		private void UpdateTrackDetails()
 		{
 			//Should improve this to show different details when multiple tracks selected - count, date range, total duration
-			int i = list_Tracks.Items.Count - (list_Tracks.SelectedIndex + 1);
+            int i = list_Tracks.SelectedIndex;
+
             Console.WriteLine(i);
 
 			txt_Details.Clear();
 			DataRow dr = tracks.Tables[0].Rows[i];
-			txt_Details.AppendText("Started:" + Environment.NewLine + dr[3].ToString().Trim());
-			txt_Details.AppendText(Environment.NewLine + "Ended:" + Environment.NewLine + dr[5].ToString().Trim());
+			txt_Details.AppendText("Started: " + dr[3].ToString().Trim());
+			txt_Details.AppendText(Environment.NewLine + "Ended:   " + dr[5].ToString().Trim());
 			txt_Details.AppendText(Environment.NewLine);
 
 			DateTime t1 = ParseDate(dr, 3);
